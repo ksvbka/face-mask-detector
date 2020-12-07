@@ -62,7 +62,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-d', '--data-dir', type=str, default='data/raw_dataset', help="Directory with the SIGNS dataset")
     parser.add_argument('-e', '--epochs', type=int, default=20, help="Where to write the new data")
-
+    parser.add_argument("-m", "--model", type=str, default="mask_detector.model", help="path to output face mask detector model")
     args = parser.parse_args()
     
     # Load and preprocess data
@@ -93,3 +93,7 @@ if __name__ == "__main__":
     test_loss,test_accuracy = model.evaluate_generator(test_generator)
     print('test_loss: ',test_loss)
     print('test_accuracy: ',test_accuracy)
+
+    # serialize the model to disk
+    print("saving mask detector model...")
+    model.save(args.model, save_format="h5")
