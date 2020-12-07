@@ -31,7 +31,7 @@ def mask_image():
     image = cv2.imread(args["image"])
     orig = image.copy()
     (h, w) = image.shape[:2]
-    blob = cv2.dnn.blobFromImage(image, 1.0, (500, 500), (104.0, 177.0, 123.0))
+    blob = cv2.dnn.blobFromImage(image, scalefactor=1.0, mean=(104.0, 177.0, 123.0))
 
     net.setInput(blob)
     detections = net.forward()
