@@ -1,0 +1,4 @@
+data/64x64_dataset
+data/dataset_raw
+data/dataset_raw.zip
+trained_model/*

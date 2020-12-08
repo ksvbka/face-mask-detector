@@ -22,14 +22,14 @@ parser.add_argument('--data-dir', default='data/dataset_raw', help="Directory wi
 parser.add_argument('--output-dir', default='data/64x64_dataset', help="Where to write the new data")
 parser.add_argument("--face", type=str, default="face_detector", help="path to face detector model directory")
 
-def extract_face(filename, output_dir, net, size=SIZE, confidence_threshold=0.7):
+def extract_face(filename, output_dir, net, size=SIZE, confidence_threshold=0.5):
     image = cv2.imread(filename)
     image_out = os.path.join(output_dir, filename.split('/')[-1])
 
     orig = image.copy()
     (h, w) = image.shape[:2]
 
-    blob = cv2.dnn.blobFromImage(image, 1.0, (128, 128), (104.0, 177.0, 123.0))
+    blob = cv2.dnn.blobFromImage(image, scalefactor=1.0, size=(128, 128), mean=(104.0, 177.0, 123.0))
     net.setInput(blob)
     detections = net.forward()
 
@@ -39,7 +39,7 @@ def extract_face(filename, output_dir, net, size=SIZE, confidence_threshold=0.7)
             # Drop face detection has low confidence
             continue
 
-        box = detections[0, 0, 0, 3:7] * np.array([w, h, w, h])
+        box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
         (startX, startY, endX, endY) = box.astype("int")
         (startX, startY) = (max(0, startX), max(0, startY))
         (endX, endY) = (min(w - 1, endX), min(h - 1, endY))
@@ -66,9 +66,13 @@ if __name__ == '__main__':
     # Define the data directories
     train_mask_dir = os.path.join(args.data_dir, 'train/Mask')
     train_non_mask_dir = os.path.join(args.data_dir, 'train/Non Mask')
+    os.makedirs(train_mask_dir, exist_ok=True)
+    os.makedirs(train_non_mask_dir, exist_ok=True)
 
     test_mask_dir = os.path.join(args.data_dir, 'test/Mask')
     test_non_mask_dir = os.path.join(args.data_dir, 'test/Non Mask')
+    os.makedirs(test_mask_dir, exist_ok=True)
+    os.makedirs(test_non_mask_dir, exist_ok=True)
 
     # Get the filenames in each directory (train and test)
     filenames_mask = os.listdir(train_mask_dir)

@@ -18,17 +18,17 @@ def mask_image():
     parser.add_argument("-f", "--face", type=str, default="face_detector", help="path to face detector model directory")
     parser.add_argument("-m", "--model", type=str, default="mask_detector.model", help="path to trained face mask detector model")
     parser.add_argument("-c", "--confidence", type=float, default=0.5, help="minimum probability to filter weak detections")
-    args = vars(parser.parse_args())
+    args = parser.parse_args()
 
     # load our serialized face detector model from disk
-    prototxtPath = os.path.sep.join([args["face"], "deploy.prototxt"])
-    weightsPath = os.path.sep.join([args["face"], "res10_300x300_ssd_iter_140000.caffemodel"])
+    prototxtPath = os.path.sep.join([args.face, "deploy.prototxt"])
+    weightsPath = os.path.sep.join([args.face, "res10_300x300_ssd_iter_140000.caffemodel"])
     net = cv2.dnn.readNet(prototxtPath, weightsPath)
 
     # load the face mask detector model from disk
-    model = load_model(args["model"])
+    model = load_model(args.model)
 
-    image = cv2.imread(args["image"])
+    image = cv2.imread(args.image)
     orig = image.copy()
     (h, w) = image.shape[:2]
     blob = cv2.dnn.blobFromImage(image, scalefactor=1.0, mean=(104.0, 177.0, 123.0))
@@ -38,7 +38,7 @@ def mask_image():
 
     for i in range(0, detections.shape[2]):
         confidence = detections[0, 0, i, 2]
-        if confidence > args["confidence"]:
+        if confidence > args.confidence:
             box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
             (startX, startY, endX, endY) = box.astype("int")
             (startX, startY) = (max(0, startX), max(0, startY))
