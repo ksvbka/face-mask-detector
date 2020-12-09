@@ -60,3 +60,4 @@ python3 mask_detect_image.py -i demo_image/2.jpg
 ![Demo](doc/1.jpg)
 ![Demo](doc/2.jpg)
 ![Demo](doc/3.jpg)
+![Demo](doc/5.jpg)
