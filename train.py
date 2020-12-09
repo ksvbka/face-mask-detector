@@ -1,21 +1,19 @@
-import tensorflow as tf
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Conv2D, MaxPool2D, MaxPooling2D, Dropout, \
-                                    Flatten, Dense, BatchNormalization, \
-                                    SpatialDropout2D, AveragePooling2D, Input
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.applications import MobileNetV2, Xception, VGG16
-
+from tensorflow.keras.layers import Conv2D, MaxPool2D, MaxPooling2D, Dropout, \
+                                    Flatten, Dense, BatchNormalization, \
+                                    SpatialDropout2D, AveragePooling2D, Input
 import os
 import cv2
 import warnings
-import numpy as np
 import argparse
-import matplotlib.pyplot as plt
+import numpy as np
+import tensorflow as tf
 
-warnings.filterwarnings('ignore')
+tf.get_logger().setLevel('WARNING')
 
 SIZE = 64
 LEARNING_RATE = 0.0001
@@ -49,32 +47,36 @@ def CNN_model():
 def MobileNetV2_model():
     baseModel = MobileNetV2(weights="imagenet", include_top=False, input_tensor=Input(shape=INPUT_SHAPE))
     for layer in baseModel.layers:
-        layer.trainable = False    
+        layer.trainable = False
 
-    headModel = baseModel.output
-    headModel = AveragePooling2D(pool_size=(2, 2))(headModel)
-    headModel = Flatten()(headModel)
-    headModel = Dense(256, activation="relu")(headModel)
-    headModel = Dropout(0.5)(headModel)
-    headModel =  Dense(1,activation='sigmoid')(headModel)
-    model = Model(inputs=baseModel.input, outputs=headModel)
+    model = Sequential()
+    model.add(baseModel)
+    model.add(AveragePooling2D(pool_size=(2, 2)))
+    model.add(Flatten())
+    model.add(Dense(256, activation="relu"))
+    model.add(Dropout(0.5))
+    model.add(Dense(50, activation="relu"))
+    model.add(Dropout(0.5))
+    model.add(Dense(1, activation='sigmoid'))
 
     # compile our model
-    model.compile(loss="binary_crossentropy", optimizer=Adam(learning_rate=LEARNING_RATE),metrics=["accuracy"])
+    model.compile(loss="binary_crossentropy", optimizer=Adam(learning_rate=LEARNING_RATE), metrics=["accuracy"])
     return model
 
 def VGG16_model():
     baseModel = VGG16(weights="imagenet", include_top=False, input_tensor=Input(shape=INPUT_SHAPE))
     for layer in baseModel.layers:
-        layer.trainable = False    
+        layer.trainable = False
 
-    headModel = baseModel.output
-    headModel = AveragePooling2D(pool_size=(2, 2))(headModel)
-    headModel = Flatten()(headModel)
-    headModel = Dense(256, activation="relu")(headModel)
-    headModel = Dropout(0.5)(headModel)
-    headModel =  Dense(1,activation='sigmoid')(headModel)
-    model = Model(inputs=baseModel.input, outputs=headModel)
+    model = Sequential()
+    model.add(baseModel)
+    model.add(AveragePooling2D(pool_size=(2, 2)))
+    model.add(Flatten())
+    model.add(Dense(256, activation="relu"))
+    model.add(Dropout(0.5))
+    model.add(Dense(50, activation="relu"))
+    model.add(Dropout(0.5))
+    model.add(Dense(1, activation='sigmoid'))
 
     # compile our model
     model.compile(loss="binary_crossentropy", optimizer=Adam(learning_rate=LEARNING_RATE),metrics=["accuracy"])
@@ -83,15 +85,15 @@ def VGG16_model():
 def Xception_model():
     baseModel = Xception(weights="imagenet", include_top=False, input_tensor=Input(shape=INPUT_SHAPE))
     for layer in baseModel.layers:
-        layer.trainable = False    
+        layer.trainable = False
 
-    headModel = baseModel.output  
-    headModel = AveragePooling2D(pool_size=(2, 2))(headModel)
-    headModel = Flatten()(headModel)
-    headModel = Dense(256, activation="relu")(headModel)
-    headModel = Dropout(0.5)(headModel)
-    headModel =  Dense(1,activation='sigmoid')(headModel)
-    model = Model(inputs=baseModel.input, outputs=headModel)
+    model = Sequential()
+    model.add(baseModel)
+    model.add(AveragePooling2D(pool_size=(2, 2)))
+    model.add(Flatten())
+    model.add(Dense(256, activation="relu"))
+    model.add(Dropout(0.5))
+    model.add(Dense(1, activation='sigmoid'))
 
     # compile our model
     model.compile(loss="binary_crossentropy", optimizer=Adam(learning_rate=LEARNING_RATE),metrics=["accuracy"])
@@ -104,13 +106,13 @@ if __name__ == "__main__":
     parser.add_argument('-e', '--epochs', type=int, default=20, help="Where to write the new data")
     parser.add_argument("-m", "--model", type=str, default="mask_detector.model", help="path to output face mask detector model")
     args = parser.parse_args()
-    
+
     # Load and preprocess data
     train_dir = os.path.join(args.data_dir, 'train')
     test_dir = os.path.join(args.data_dir, 'test')
     valid_dir = os.path.join(args.data_dir, 'validation')
 
-    train_datagen = ImageDataGenerator(rescale=1./255, rotation_range=0.2, zoom_range=0.2, shear_range=0.2, horizontal_flip=True)
+    train_datagen = ImageDataGenerator(rescale=1./255, rotation_range=0.2, zoom_range=0.2, shear_range=0.2, brightness_range=[0.9, 1.1], horizontal_flip=True)
     valid_datagen = ImageDataGenerator(rescale=1./255, zoom_range=0.2, shear_range=0.2)
     test_datagen  = ImageDataGenerator(rescale=1./255, zoom_range=0.2, shear_range=0.2)
 
@@ -122,19 +124,20 @@ if __name__ == "__main__":
     print(train_generator.image_shape)
 
     # Build model
-    model = CNN_model()
-    # model = MobileNetV2_model()
+    # model = CNN_model()
+    model = MobileNetV2_model()
     # model = VGG16_model()
     # model = Xception_model()
     model.summary()
 
     # Train model
-    model_train = model.fit(train_generator, epochs=args.epochs, validation_data=valid_generator, batch_size=32)
+    earlystop = tf.keras.callbacks.EarlyStopping(monitor='val_accuracy', patience=30, verbose=1, mode='auto')
+    model_train = model.fit(train_generator, epochs=args.epochs, validation_data=valid_generator, batch_size=32, verbose=1, callbacks=[earlystop], shuffle=True)
     print(model_train)
 
     test_loss,test_accuracy = model.evaluate_generator(test_generator)
-    print('test_loss: ',test_loss)
-    print('test_accuracy: ',test_accuracy)
+    print('test_loss: ', test_loss)
+    print('test_accuracy: ', test_accuracy)
 
     # serialize the model to disk
     print("saving mask detector model...")
