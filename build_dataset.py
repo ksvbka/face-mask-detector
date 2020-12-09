@@ -11,9 +11,7 @@ import argparse
 import random
 import os
 
-from PIL import Image
 from tqdm import tqdm
-
 
 SIZE = 64
 
@@ -24,9 +22,7 @@ parser.add_argument("--face", type=str, default="face_detector", help="path to f
 
 def extract_face(filename, output_dir, net, size=SIZE, confidence_threshold=0.5):
     image = cv2.imread(filename)
-    image_out = os.path.join(output_dir, filename.split('/')[-1])
-
-    orig = image.copy()
+    filename_out = filename.split('/')[-1].split('.')[0]
     (h, w) = image.shape[:2]
 
     blob = cv2.dnn.blobFromImage(image, scalefactor=1.0, size=(128, 128), mean=(104.0, 177.0, 123.0))
@@ -35,26 +31,21 @@ def extract_face(filename, output_dir, net, size=SIZE, confidence_threshold=0.5)
 
     for i in range(0, detections.shape[2]):
         confidence = detections[0, 0, i, 2]
-        if confidence < confidence_threshold:
-            # Drop face detection has low confidence
-            continue
+        if confidence > confidence_threshold:
+            box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
+            (startX, startY, endX, endY) = box.astype("int")
+            (startX, startY) = (max(0, startX), max(0, startY))
+            (endX, endY) = (min(w - 1, endX), min(h - 1, endY))
 
-        box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
-        (startX, startY, endX, endY) = box.astype("int")
-        (startX, startY) = (max(0, startX), max(0, startY))
-        (endX, endY) = (min(w - 1, endX), min(h - 1, endY))
+            frame = image[startY:endY, startX:endX]
+            frame = cv2.resize(frame, (size, size), interpolation=cv2.INTER_AREA)
+            if i > 0:
+                image_out = os.path.join(output_dir, '%s_%s.jpg' % (filename_out, i))
+            else:
+                image_out = os.path.join(output_dir, '%s.jpg' % filename_out)
+            cv2.imwrite(image_out, frame)
 
-        frame = image[startY:endY, startX:endX]
-        frame = cv2.resize(frame, (size, size), interpolation=cv2.INTER_AREA)
-
-        if i > 0:
-            base_dir = os.path.dirname(image_out)
-            base_file = '%s_%s.jpg' % (os.path.basename(image_out).split('.')[0], i)
-            image_out = os.path.join(base_dir, base_file)
-
-        status = cv2.imwrite(image_out, frame)
-
-if __name__ == '__main__':
+def app():
     args = parser.parse_args()
 
     assert os.path.isdir(args.data_dir), "Couldn't find the dataset at {}".format(args.data_dir)
@@ -117,9 +108,13 @@ if __name__ == '__main__':
 
         print("Processing {} data, saving preprocessed data to {}".format(split, output_dir_split))
         for filename in tqdm(filenames[split]):
-            try:
-                extract_face(filename, output_dir_split, net)
-            except Exception as e:
-                pass
+            extract_face(filename, output_dir_split, net)
 
     print("Done building dataset")
+
+
+if __name__ == '__main__':
+    try:
+        app()
+    except Exception as e:
+        print(e)
