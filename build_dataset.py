@@ -22,6 +22,9 @@ parser.add_argument("--face", type=str, default="face_detector", help="path to f
 
 def extract_face(filename, output_dir, net, size=SIZE, confidence_threshold=0.5):
     image = cv2.imread(filename)
+    if image is None:
+        return
+
     filename_out = filename.split('/')[-1].split('.')[0]
     (h, w) = image.shape[:2]
 
