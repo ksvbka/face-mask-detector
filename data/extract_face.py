@@ -37,13 +37,16 @@ def extract_face(filename, output_dir, net, size, confidence_threshold):
             color = (0, 255, 0)
             cv2.rectangle(image, (startX, startY), (endX, endY), color, 2)
 
-            frame = image[startY:endY, startX:endX]
-            frame = cv2.resize(frame, (size, size), interpolation=cv2.INTER_AREA)
-            if i > 0:
-                image_out = os.path.join(output_dir, '%s_%s.jpg' % (filename_out, i))
-            else:
-                image_out = os.path.join(output_dir, '%s.jpg' % filename_out)
-            cv2.imwrite(image_out, frame)
+            try:
+                frame = image[startY:endY, startX:endX]
+                frame = cv2.resize(frame, (size, size), interpolation=cv2.INTER_AREA)
+                if i > 0:
+                    image_out = os.path.join(output_dir, '%s_%s.jpg' % (filename_out, i))
+                else:
+                    image_out = os.path.join(output_dir, '%s.jpg' % filename_out)
+                cv2.imwrite(image_out, frame)
+            except Exception as e:
+                 print(e)
     
     # show the output image
     cv2.imshow("Output", image)
@@ -69,7 +72,5 @@ def app():
     print("Done!")
 
 if __name__ == '__main__':
-    try:
-        app()
-    except Exception as e:
-        print(e)
+    app()
+
