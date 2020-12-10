@@ -12,10 +12,14 @@ import cv2
 import os
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-i', '--input-dir', help="Directory of input image")
-parser.add_argument('-o', '--output-dir', default='data/64x64_dataset', help="Where to write the extracted data")
-parser.add_argument('-s', '--size', default=64, type=int, help="Size of output face image")
-parser.add_argument('-c', '--confidence', default=0.5, type=float, help='confidence threadhold to detect face')
+parser.add_argument('-i', '--input-dir', 
+                    help="Directory of input image")
+parser.add_argument('-o', '--output-dir', default='data/64x64_dataset', 
+                    help="Where to write the extracted data")
+parser.add_argument('-s', '--size', default=64, type=int, 
+                    help="Size of output face image")
+parser.add_argument('-c', '--confidence', default=0.5, type=float, 
+                    help='Confidence threadhold to detect face')
 
 def extract_face(filename, output_dir, net, size, confidence_threshold):
     image = cv2.imread(filename)
