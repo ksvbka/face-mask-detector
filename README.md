@@ -34,20 +34,10 @@ python3 build_dataset.py --data-dir data/64x64_dataset --output-dir data/dataset
 ```
 ## Training
 
-Change model by comment or uncommend from train.py source code.
-
+Execute train.py script and pass  network architecture type dataset dir and epochs to it.
+Default network type is MobileNetV2.
 ```
-# Build model
-model = CNN_model()
-# model = MobileNetV2_model()
-# model = VGG16_model()
-# model = Xception_model()
-model.summary()
-```
-
-Execute train.py script and pass dataset dir and epochs to it.
-```
-python3 train.py --data-dir data/64x64_dataset --epochs 20
+python3 train.py --net-type MobileNetV2 --data-dir data/64x64_dataset --epochs 20
 ```
 
 ## Testing

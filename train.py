@@ -16,11 +16,18 @@ import tensorflow as tf
 tf.get_logger().setLevel('WARNING')
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-d', '--data-dir', type=str, default='data/raw_dataset', help="Directory with the SIGNS dataset")
-parser.add_argument('-e', '--epochs', type=int, default=20, help="Where to write the new data")
-parser.add_argument("-m", "--model", type=str, default="mask_detector.model", help="Path to output face mask detector model")
-parser.add_argument('-s', '--size', type=int, default=64, help="Size of input data")
-parser.add_argument('-l', '--learning-rate', type=float, default=0.0001, help="Learning rate value")
+parser.add_argument('-d', '--data-dir', type=str, default='data/raw_dataset', 
+                    help="Directory of dataset")
+parser.add_argument('-e', '--epochs', type=int, default=20, 
+                    help="Where to write the new data")
+parser.add_argument("-m", "--model", type=str, default="mask_detector.model", 
+                    help="Path to output face mask detector model")
+parser.add_argument('-s', '--size', type=int, default=64, 
+                    help="Size of input data")
+parser.add_argument('-l', '--learning-rate', type=float, default=0.0001, 
+                    help="Learning rate value")
+parser.add_argument('-n', '--net-type', type=str, default='MobileNetV2', choices=['CNN', 'MobileNetV2', 'VGG16', 'Xception'],
+                    help="The network architecture, optional: CNN, MobileNetV2, VGG16, Xception")
 
 def CNN_model(learning_rate, input_shape):
     # Build model
@@ -125,10 +132,15 @@ if __name__ == "__main__":
     print(train_generator.image_shape)
 
     # Build model
-    # model = CNN_model(lr, shape)
-    model = MobileNetV2_model(lr, shape)
-    # model = VGG16_model(lr, shape)
-    # model = Xception_model(lr, shape)
+    net_type_to_model = {
+        'CNN' : CNN_model, 
+        'MobileNetV2': MobileNetV2_model, 
+        'VGG16' : VGG16_model, 
+        'Xception' : Xception_model
+    }
+
+    model_builder = net_type_to_model.get(args.net_type)
+    model = model_builder(lr, shape)
     model.summary()
 
     # Train model
