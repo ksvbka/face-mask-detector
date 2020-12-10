@@ -26,7 +26,8 @@ parser.add_argument('-s', '--size', type=int, default=64,
                     help="Size of input data")
 parser.add_argument('-l', '--learning-rate', type=float, default=0.0001, 
                     help="Learning rate value")
-parser.add_argument('-n', '--net-type', type=str, default='MobileNetV2', choices=['CNN', 'MobileNetV2', 'VGG16', 'Xception'],
+parser.add_argument('-n', '--net-type', type=str, default='MobileNetV2', 
+                    choices=['CNN', 'MobileNetV2', 'VGG16', 'Xception'],
                     help="The network architecture, optional: CNN, MobileNetV2, VGG16, Xception")
 
 def CNN_model(learning_rate, input_shape):

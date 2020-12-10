@@ -32,22 +32,25 @@ def extract_face(filename, output_dir, net, size, confidence_threshold):
 
     for i in range(0, detections.shape[2]):
         confidence = detections[0, 0, i, 2]
-        if confidence > confidence_threshold:
-            box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
-            (startX, startY, endX, endY) = box.astype("int")
-            (startX, startY) = (max(0, startX), max(0, startY))
-            (endX, endY) = (min(w - 1, endX), min(h - 1, endY))
+        if confidence < confidence_threshold:
+            # Drop low confidence detections
+            continue
 
-            try:
-                frame = image[startY:endY, startX:endX]
-                frame = cv2.resize(frame, (size, size), interpolation=cv2.INTER_AREA)
-                if i > 0:
-                    image_out = os.path.join(output_dir, '%s_%s.jpg' % (filename_out, i))
-                else:
-                    image_out = os.path.join(output_dir, '%s.jpg' % filename_out)
-                cv2.imwrite(image_out, frame)
-            except Exception as e:
-                 print(e)
+        box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
+        (startX, startY, endX, endY) = box.astype("int")
+        (startX, startY) = (max(0, startX), max(0, startY))
+        (endX, endY) = (min(w - 1, endX), min(h - 1, endY))
+        
+        try:
+            frame = image[startY:endY, startX:endX]
+            frame = cv2.resize(frame, (size, size), interpolation=cv2.INTER_AREA)
+            if i > 0:
+                image_out = os.path.join(output_dir, '%s_%s.jpg' % (filename_out, i))
+            else:
+                image_out = os.path.join(output_dir, '%s.jpg' % filename_out)
+            cv2.imwrite(image_out, frame)
+        except Exception as e:
+                print(e)
     
 def app():
     args = parser.parse_args()
