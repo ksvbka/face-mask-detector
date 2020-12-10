@@ -1,5 +1,6 @@
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.models import Model
+from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard, EarlyStopping
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.applications import MobileNetV2, Xception, VGG16
@@ -55,7 +56,7 @@ def CNN_model(learning_rate, input_shape):
 
 def MobileNetV2_model(learning_rate, input_shape):
     baseModel = MobileNetV2(weights="imagenet", include_top=False, input_tensor=Input(shape=input_shape))
-    for layer in baseModel.layers:
+    for layer in baseModel.layers[:-4]:
         layer.trainable = False
 
     model = Sequential()
@@ -139,14 +140,18 @@ if __name__ == "__main__":
         'VGG16' : VGG16_model, 
         'Xception' : Xception_model
     }
-
-    model_builder = net_type_to_model.get(args.net_type)
+    model_name = args.net_type
+    model_builder = net_type_to_model.get(model_name)
     model = model_builder(lr, shape)
     model.summary()
 
+    earlystop = EarlyStopping(monitor='val_accuracy', patience=30, mode='auto')
+    tensorboard = TensorBoard(log_dir=os.path.join("logs", model_name))
+    checkpoint = ModelCheckpoint(os.path.join("results", f"{model_name}" + "-loss-{val_loss:.2f}.h5"),
+                                save_best_only=True, verbose=1)
     # Train model
-    earlystop = tf.keras.callbacks.EarlyStopping(monitor='val_accuracy', patience=30, verbose=1, mode='auto')
-    model_train = model.fit(train_generator, epochs=args.epochs, validation_data=valid_generator, batch_size=32, verbose=1, callbacks=[earlystop], shuffle=True)
+    model_train = model.fit(train_generator, epochs=args.epochs, validation_data=valid_generator, 
+                            batch_size=32, callbacks=[earlystop, tensorboard, checkpoint], shuffle=True)
     print(model_train)
 
     test_loss,test_accuracy = model.evaluate_generator(test_generator)
