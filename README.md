@@ -2,7 +2,7 @@
 
 Detecting face mask with OpenCV and TensorFlow. Using simple CNN or model provided by TensorFlow as MobileNetV2, VGG16, Xception.
 
-![Demo](doc/6.jpg)
+![Demo](doc/8.jpg)
 
 ## Data
 
@@ -39,7 +39,10 @@ Default network type is MobileNetV2.
 ```
 python3 train.py --net-type MobileNetV2 --data-dir data/64x64_dataset --epochs 20
 ```
-
+View tensorboard
+```
+tensorboard --logdir logs --bind_all
+```
 ## Testing
 
 ```
@@ -52,3 +55,8 @@ python3 mask_detect_image.py -i demo_image/2.jpg
 ![Demo](doc/3.jpg)
 ![Demo](doc/4.jpg)
 ![Demo](doc/5.jpg)
+![Demo](doc/6.jpg)
+![Demo](doc/8.jpg)
+![Demo](doc/9.jpg)
+![Demo](doc/10.jpg)
+
