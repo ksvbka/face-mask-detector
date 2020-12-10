@@ -15,16 +15,17 @@ import tensorflow as tf
 
 tf.get_logger().setLevel('WARNING')
 
-SIZE = 64
-LEARNING_RATE = 0.0001
-TARGET_SIZE = (SIZE,SIZE)
-INPUT_SHAPE=(SIZE,SIZE,3)
+parser = argparse.ArgumentParser()
+parser.add_argument('-d', '--data-dir', type=str, default='data/raw_dataset', help="Directory with the SIGNS dataset")
+parser.add_argument('-e', '--epochs', type=int, default=20, help="Where to write the new data")
+parser.add_argument("-m", "--model", type=str, default="mask_detector.model", help="Path to output face mask detector model")
+parser.add_argument('-s', '--size', type=int, default=64, help="Size of input data")
+parser.add_argument('-l', '--learning-rate', type=float, default=0.0001, help="Learning rate value")
 
-
-def CNN_model():
+def CNN_model(learning_rate, input_shape):
     # Build model
     model = Sequential()
-    model.add(Conv2D(filters=32, kernel_size=(3, 3), padding='same', input_shape=INPUT_SHAPE, activation='relu'))
+    model.add(Conv2D(filters=32, kernel_size=(3, 3), padding='same', input_shape=input_shape, activation='relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(Dropout(0.5))
 
@@ -41,11 +42,11 @@ def CNN_model():
     model.add(Dropout(0.5))
     model.add(Dense(1, activation='sigmoid'))
 
-    model.compile(loss='binary_crossentropy', optimizer=Adam(learning_rate=LEARNING_RATE), metrics=['accuracy'])
+    model.compile(loss='binary_crossentropy', optimizer=Adam(learning_rate=learning_rate), metrics=['accuracy'])
     return model
 
-def MobileNetV2_model():
-    baseModel = MobileNetV2(weights="imagenet", include_top=False, input_tensor=Input(shape=INPUT_SHAPE))
+def MobileNetV2_model(learning_rate, input_shape):
+    baseModel = MobileNetV2(weights="imagenet", include_top=False, input_tensor=Input(shape=input_shape))
     for layer in baseModel.layers:
         layer.trainable = False
 
@@ -60,11 +61,11 @@ def MobileNetV2_model():
     model.add(Dense(1, activation='sigmoid'))
 
     # compile our model
-    model.compile(loss="binary_crossentropy", optimizer=Adam(learning_rate=LEARNING_RATE), metrics=["accuracy"])
+    model.compile(loss="binary_crossentropy", optimizer=Adam(learning_rate=learning_rate), metrics=["accuracy"])
     return model
 
-def VGG16_model():
-    baseModel = VGG16(weights="imagenet", include_top=False, input_tensor=Input(shape=INPUT_SHAPE))
+def VGG16_model(learning_rate, input_shape):
+    baseModel = VGG16(weights="imagenet", include_top=False, input_tensor=Input(shape=input_shape))
     for layer in baseModel.layers:
         layer.trainable = False
 
@@ -79,11 +80,11 @@ def VGG16_model():
     model.add(Dense(1, activation='sigmoid'))
 
     # compile our model
-    model.compile(loss="binary_crossentropy", optimizer=Adam(learning_rate=LEARNING_RATE),metrics=["accuracy"])
+    model.compile(loss="binary_crossentropy", optimizer=Adam(learning_rate=learning_rate),metrics=["accuracy"])
     return model
 
-def Xception_model():
-    baseModel = Xception(weights="imagenet", include_top=False, input_tensor=Input(shape=INPUT_SHAPE))
+def Xception_model(learning_rate, input_shape):
+    baseModel = Xception(weights="imagenet", include_top=False, input_tensor=Input(shape=input_shape))
     for layer in baseModel.layers:
         layer.trainable = False
 
@@ -96,16 +97,16 @@ def Xception_model():
     model.add(Dense(1, activation='sigmoid'))
 
     # compile our model
-    model.compile(loss="binary_crossentropy", optimizer=Adam(learning_rate=LEARNING_RATE),metrics=["accuracy"])
+    model.compile(loss="binary_crossentropy", optimizer=Adam(learning_rate=learning_rate),metrics=["accuracy"])
     return model
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-d', '--data-dir', type=str, default='data/raw_dataset', help="Directory with the SIGNS dataset")
-    parser.add_argument('-e', '--epochs', type=int, default=20, help="Where to write the new data")
-    parser.add_argument("-m", "--model", type=str, default="mask_detector.model", help="path to output face mask detector model")
     args = parser.parse_args()
+
+    lr = args.learning_rate
+    size = (args.size, args.size)
+    shape = (args.size, args.size, 3)
 
     # Load and preprocess data
     train_dir = os.path.join(args.data_dir, 'train')
@@ -116,18 +117,18 @@ if __name__ == "__main__":
     valid_datagen = ImageDataGenerator(rescale=1./255, zoom_range=0.2, shear_range=0.2)
     test_datagen  = ImageDataGenerator(rescale=1./255, zoom_range=0.2, shear_range=0.2)
 
-    train_generator = train_datagen.flow_from_directory(train_dir, target_size=TARGET_SIZE, batch_size=32, class_mode='binary')
-    valid_generator = valid_datagen.flow_from_directory(valid_dir, target_size=TARGET_SIZE, batch_size=32, class_mode='binary')
-    test_generator  = test_datagen.flow_from_directory(test_dir, target_size=TARGET_SIZE, batch_size=32, class_mode='binary')
+    train_generator = train_datagen.flow_from_directory(train_dir, target_size=size, batch_size=32, class_mode='binary')
+    valid_generator = valid_datagen.flow_from_directory(valid_dir, target_size=size, batch_size=32, class_mode='binary')
+    test_generator  = test_datagen.flow_from_directory(test_dir, target_size=size, batch_size=32, class_mode='binary')
 
     print(train_generator.class_indices)
     print(train_generator.image_shape)
 
     # Build model
-    # model = CNN_model()
-    model = MobileNetV2_model()
-    # model = VGG16_model()
-    # model = Xception_model()
+    # model = CNN_model(lr, shape)
+    model = MobileNetV2_model(lr, shape)
+    # model = VGG16_model(lr, shape)
+    # model = Xception_model(lr, shape)
     model.summary()
 
     # Train model

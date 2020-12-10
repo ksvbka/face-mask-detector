@@ -9,7 +9,6 @@ import argparse
 import cv2
 import os
 
-SIZE = 64
 
 def mask_image():
     # construct the argument parser and parse the arguments
@@ -17,6 +16,7 @@ def mask_image():
     parser.add_argument("-i", "--image", required=True, help="path to input image")
     parser.add_argument("-f", "--face", type=str, default="face_detector", help="path to face detector model directory")
     parser.add_argument("-m", "--model", type=str, default="mask_detector.model", help="path to trained face mask detector model")
+    parser.add_argument('-s', '--size', type=int, default=64, help="Size of face image")
     parser.add_argument("-c", "--confidence", type=float, default=0.5, help="minimum probability to filter weak detections")
     args = parser.parse_args()
 
@@ -46,7 +46,7 @@ def mask_image():
 
             face = image[startY:endY, startX:endX]
             face = cv2.cvtColor(face, cv2.COLOR_BGR2RGB)
-            face = cv2.resize(face, (SIZE, SIZE))
+            face = cv2.resize(face, (args.size, args.size))
             face = img_to_array(face)
             face = preprocess_input(face)
             face = np.expand_dims(face, axis=0)
@@ -62,6 +62,6 @@ def mask_image():
     # show the output image
     cv2.imshow("Output", image)
     cv2.waitKey(0)
-    
+
 if __name__ == "__main__":
     mask_image()

@@ -13,14 +13,14 @@ import os
 
 from tqdm import tqdm
 
-SIZE = 64
-
 parser = argparse.ArgumentParser()
-parser.add_argument('--data-dir', default='data/dataset_raw', help="Directory with the SIGNS dataset")
-parser.add_argument('--output-dir', default='data/64x64_dataset', help="Where to write the new data")
-parser.add_argument("--face", type=str, default="face_detector", help="path to face detector model directory")
+parser.add_argument('-d', '--data-dir', default='data/dataset_raw', help="Directory with the raw dataset")
+parser.add_argument('-o', '--output-dir', default='data/64x64_dataset', help="Where to write the new data")
+parser.add_argument('-s', '--size', type=int, default=64, help="Where to write the new data")
+parser.add_argument('-c', '--confidence', type=float, default=0.5, help="Confidence threshold to detect face")
+parser.add_argument('--face-model', type=str, default="face_detector", help="path to face detector model directory")
 
-def extract_face(filename, output_dir, net, size=SIZE, confidence_threshold=0.5):
+def extract_face(filename, output_dir, net, size, confidence_threshold):
     image = cv2.imread(filename)
     if image is None:
         return
@@ -53,8 +53,8 @@ def app():
 
     assert os.path.isdir(args.data_dir), "Couldn't find the dataset at {}".format(args.data_dir)
 
-    prototxtPath = os.path.join(args.face, "deploy.prototxt")
-    weightsPath = os.path.join(args.face, "res10_300x300_ssd_iter_140000.caffemodel")
+    prototxtPath = os.path.join(args.face_model, "deploy.prototxt")
+    weightsPath = os.path.join(args.face_model, "res10_300x300_ssd_iter_140000.caffemodel")
     net = cv2.dnn.readNet(prototxtPath, weightsPath)
 
     # Define the data directories
@@ -111,7 +111,7 @@ def app():
 
         print("Processing {} data, saving preprocessed data to {}".format(split, output_dir_split))
         for filename in tqdm(filenames[split]):
-            extract_face(filename, output_dir_split, net)
+            extract_face(filename, output_dir_split, net, args.size, args.confidence)
 
     print("Done building dataset")
 
