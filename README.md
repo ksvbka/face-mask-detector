@@ -2,7 +2,7 @@
 
 Detecting face mask with OpenCV and TensorFlow. Using simple CNN or model provided by TensorFlow as MobileNetV2, VGG16, Xception.
 
-![Demo](doc/4.jpg)
+![Demo](doc/6.jpg)
 
 ## Data
 
@@ -60,4 +60,5 @@ python3 mask_detect_image.py -i demo_image/2.jpg
 ![Demo](doc/1.jpg)
 ![Demo](doc/2.jpg)
 ![Demo](doc/3.jpg)
+![Demo](doc/4.jpg)
 ![Demo](doc/5.jpg)
