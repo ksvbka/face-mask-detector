@@ -1,5 +1,8 @@
 # Face Mask Detection
 
+![GitHub](https://img.shields.io/github/license/mashape/apistatus.svg)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/Django.svg)
+
 Detecting face mask with OpenCV and TensorFlow. Using simple CNN or model provided by TensorFlow as MobileNetV2, VGG16, Xception.
 
 ![Demo](doc/8.jpg)
