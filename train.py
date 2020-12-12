@@ -19,7 +19,7 @@ tf.get_logger().setLevel('WARNING')
 parser = argparse.ArgumentParser()
 parser.add_argument('-d', '--data-dir', type=str, default='data/raw_dataset',
                     help="Directory of dataset")
-parser.add_argument('-e', '--epochs', type=int, default=20,
+parser.add_argument('-e', '--epochs', type=int, default=30,
                     help="Where to write the new data")
 parser.add_argument("-m", "--model", type=str, default="mask_detector.model",
                     help="Path to output face mask detector model")
@@ -70,8 +70,6 @@ def MobileNetV2_model(learning_rate, input_shape):
     model.add(Flatten())
     model.add(Dense(512, activation="relu"))
     model.add(Dropout(0.5))
-    model.add(Dense(256, activation="relu"))
-    model.add(Dropout(0.5))
     model.add(Dense(50, activation="relu"))
     model.add(Dropout(0.5))
     model.add(Dense(1, activation='sigmoid'))
@@ -90,9 +88,7 @@ def VGG16_model(learning_rate, input_shape):
     model.add(baseModel)
     model.add(AveragePooling2D(pool_size=(2, 2)))
     model.add(Flatten())
-    model.add(Dense(512, activation="relu"))
-    model.add(Dropout(0.5))
-    model.add(Dense(256, activation="relu"))
+    model.add(Dense(128, activation="relu"))
     model.add(Dropout(0.5))
     model.add(Dense(50, activation="relu"))
     model.add(Dropout(0.5))
@@ -113,8 +109,6 @@ def Xception_model(learning_rate, input_shape):
     model.add(AveragePooling2D(pool_size=(2, 2)))
     model.add(Flatten())
     model.add(Dense(512, activation="relu"))
-    model.add(Dropout(0.5))
-    model.add(Dense(256, activation="relu"))
     model.add(Dropout(0.5))
     model.add(Dense(50, activation="relu"))
     model.add(Dropout(0.5))
@@ -168,11 +162,11 @@ if __name__ == "__main__":
     model = model_builder(lr, shape)
     model.summary()
 
-    earlystop = EarlyStopping(monitor='val_accuracy', patience=30, mode='auto')
+    earlystop = EarlyStopping(monitor='val_accuracy', patience=5, mode='auto')
     tensorboard = TensorBoard(log_dir=os.path.join("logs", model_name))
-    checkpoint = ModelCheckpoint(os.path.join("results", f"{model_name}" + "-loss-{val_loss:.2f}" + \
-                                             f"-bs-{bs}" + f"-lr-{lr}" + f"-epochs-{epochs}.h5"),    \
-                                              save_best_only=True, verbose=1)
+    checkpoint = ModelCheckpoint(os.path.join("results", f"{model_name}" + f"-size-{size[0]}" + \
+                                             f"-bs-{bs}" + f"-lr-{lr}.h5"),    \
+                                              monitor='val_accuracy',save_best_only=True, verbose=1)
     # Train model
     model_train = model.fit(train_generator, epochs=epochs, validation_data=valid_generator,
                             batch_size=bs, callbacks=[earlystop, tensorboard, checkpoint], shuffle=True)
