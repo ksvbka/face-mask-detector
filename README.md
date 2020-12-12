@@ -51,6 +51,28 @@ tensorboard --logdir logs --bind_all
 ```
 python3 mask_detect_image.py -i demo_image/2.jpg
 ```
+
+## Result
+Hyperparameter: 
+    - batch size: 32
+    - Learing rate: 0.0001
+    - Input size: 64x64x3
+
+Model result
+| Model         | Test Accuracy|
+| ------------- | -------------|
+| CNN           |  87.67%      |
+| MobileNetV2   |  97.33%      |
+| VGG16         |  91.68%      |
+| **Xception**  | **98.33%**   |
+
+Model size
+| Model         | Size         |
+| ------------- | -------------|
+| CNN           |  26.5MB      |
+| **MobileNetV2**|  **20.8MB** |
+| VGG16         |  59.2MB      |
+| Xception  | 96.6MB   |
 ## Demo
 
 ![Demo](doc/1.jpg)

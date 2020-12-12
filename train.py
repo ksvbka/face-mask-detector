@@ -3,7 +3,7 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard, EarlyStopping
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from tensorflow.keras.applications import MobileNetV2, Xception, VGG16
+from tensorflow.keras.applications import MobileNetV2, Xception, VGG16, InceptionV3
 from tensorflow.keras.layers import Conv2D, MaxPool2D, MaxPooling2D, Dropout, \
                                     Flatten, Dense, BatchNormalization, \
                                     SpatialDropout2D, AveragePooling2D, Input
@@ -30,7 +30,7 @@ parser.add_argument('-b', '--batch-size', type=int, default=32,
 parser.add_argument('-l', '--learning-rate', type=float, default=0.0001,
                     help="Learning rate value")
 parser.add_argument('-n', '--net-type', type=str, default='MobileNetV2',
-                    choices=['CNN', 'MobileNetV2', 'VGG16', 'Xception'],
+                    choices=['CNN', 'MobileNetV2', 'VGG16', 'InceptionV3','Xception'],
                     help="The network architecture, optional: CNN, MobileNetV2, VGG16, Xception")
 
 def CNN_model(learning_rate, input_shape):
@@ -88,8 +88,6 @@ def VGG16_model(learning_rate, input_shape):
     model.add(baseModel)
     model.add(AveragePooling2D(pool_size=(2, 2)))
     model.add(Flatten())
-    model.add(Dense(128, activation="relu"))
-    model.add(Dropout(0.5))
     model.add(Dense(50, activation="relu"))
     model.add(Dropout(0.5))
     model.add(Dense(1, activation='sigmoid'))
