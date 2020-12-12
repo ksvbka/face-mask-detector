@@ -1,8 +1,8 @@
 .env/
 .vscode/
-data/64x64_dataset
-data/dataset_raw
-data/dataset_raw.zip
+data/*_dataset
+data/dataset_raw*
 results/*
 logs/*
+test_*
 mask_detector.model
