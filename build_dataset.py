@@ -14,11 +14,16 @@ import os
 from tqdm import tqdm
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-d', '--data-dir', default='data/dataset_raw', help="Directory with the raw dataset")
-parser.add_argument('-o', '--output-dir', default='data/64x64_dataset', help="Where to write the new data")
-parser.add_argument('-s', '--size', type=int, default=64, help="Where to write the new data")
-parser.add_argument('-c', '--confidence', type=float, default=0.5, help="Confidence threshold to detect face")
-parser.add_argument('--face-model', type=str, default="face_detector", help="path to face detector model directory")
+parser.add_argument('-d', '--data-dir', default='data/dataset_raw', 
+                    help="Directory with the raw dataset")
+parser.add_argument('-o', '--output-dir', default='data/64x64_dataset', 
+                    help="Where to write the new data")
+parser.add_argument('-s', '--size', type=int, default=64, 
+                    help="Where to write the new data")
+parser.add_argument('-c', '--confidence', type=float, default=0.5, 
+                    help="Confidence threshold to detect face")
+parser.add_argument('--face-model', type=str, default="face_detector", 
+                    help="path to face detector model directory")
 
 def extract_face(filename, output_dir, net, size, confidence_threshold):
     image = cv2.imread(filename)
