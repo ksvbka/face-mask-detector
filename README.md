@@ -9,9 +9,9 @@ Detecting face mask with OpenCV and TensorFlow. Using simple CNN or model provid
 
 ## Data
 
-Raw data collected from kaggle and script crawl_image.py, split to 'Mask' and 'Non Mask' class.
+Raw data collected from kaggle and script `crawl_image.py`, split to 'Mask' and 'Non Mask' class.
 
-Using build_data.py to extract faces from raw dataset and resize to 64x64.
+Using `build_data.py` to extract faces from raw dataset and resize to 64x64.
 
 ## Installation
 
@@ -37,7 +37,7 @@ python3 build_dataset.py --data-dir data/64x64_dataset --output-dir data/dataset
 ```
 ## Training
 
-Execute train.py script and pass  network architecture type dataset dir and epochs to it.
+Execute `train.py` script and pass  network architecture type dataset dir and epochs to it.
 Default network type is MobileNetV2.
 ```
 python3 train.py --net-type MobileNetV2 --data-dir data/64x64_dataset --epochs 20
@@ -49,7 +49,7 @@ tensorboard --logdir logs --bind_all
 ## Testing
 
 ```
-python3 mask_detect_image.py -i demo_image/2.jpg
+python3 mask_detect_image.py -m results/MobileNetV2-size-64-bs-32-lr-0.0001.h5 -i demo_image/2.jpg
 ```
 
 ## Result
