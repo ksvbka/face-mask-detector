@@ -13,6 +13,7 @@ import warnings
 import argparse
 import numpy as np
 import tensorflow as tf
+import matplotlib.pyplot as plt
 
 tf.get_logger().setLevel('WARNING')
 
@@ -29,17 +30,21 @@ parser.add_argument('-b', '--batch-size', type=int, default=32,
                     help="Bactch size of data generator")
 parser.add_argument('-l', '--learning-rate', type=float, default=0.0001,
                     help="Learning rate value")
+parser.add_argument('-sh', '--show-history', action='store_true',
+                    help="Show training history")
 parser.add_argument('-n', '--net-type', type=str, default='MobileNetV2',
-                    choices=['CNN', 'MobileNetV2', 'VGG16', 'InceptionV3','Xception'],
+                    choices=['CNN', 'MobileNetV2', 'VGG16','Xception'],
                     help="The network architecture, optional: CNN, MobileNetV2, VGG16, Xception")
 
 def CNN_model(learning_rate, input_shape):
     # Build model
     model = Sequential()
     model.add(Conv2D(filters=32, kernel_size=(3, 3), padding='same', input_shape=input_shape, activation='relu'))
+    model.add(Conv2D(filters=32, kernel_size=(3, 3), padding='same', input_shape=input_shape, activation='relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(Dropout(0.5))
 
+    model.add(Conv2D(filters=64, kernel_size=(3, 3), padding='same', activation='relu'))
     model.add(Conv2D(filters=64, kernel_size=(3, 3), padding='same', activation='relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(Dropout(0.5))
@@ -132,7 +137,7 @@ if __name__ == "__main__":
     test_dir = os.path.join(args.data_dir, 'test')
     valid_dir = os.path.join(args.data_dir, 'validation')
 
-    train_datagen = ImageDataGenerator(rescale=1./255, rotation_range=0.2, zoom_range=0.2, \
+    train_datagen = ImageDataGenerator(rescale=1./255, rotation_range=5, zoom_range=0.2, \
                                        shear_range=0.2, brightness_range=[0.9, 1.1], \
                                        horizontal_flip=True)                  
     valid_datagen = ImageDataGenerator(rescale=1./255)
@@ -160,16 +165,14 @@ if __name__ == "__main__":
     model = model_builder(lr, shape)
     model.summary()
 
-    earlystop = EarlyStopping(monitor='val_accuracy', patience=5, mode='auto')
+    earlystop = EarlyStopping(monitor='val_loss', patience=3, mode='auto')
     tensorboard = TensorBoard(log_dir=os.path.join("logs", model_name))
     checkpoint = ModelCheckpoint(os.path.join("results", f"{model_name}" + f"-size-{size[0]}" + \
                                              f"-bs-{bs}" + f"-lr-{lr}.h5"),    \
-                                              monitor='val_accuracy',save_best_only=True, verbose=1)
+                                              monitor='val_loss',save_best_only=True, verbose=1)
     # Train model
-    model_train = model.fit(train_generator, epochs=epochs, validation_data=valid_generator,
-                            batch_size=bs, callbacks=[earlystop, tensorboard, checkpoint], shuffle=True)
-    print(model_train)
-
+    history = model.fit(train_generator, epochs=epochs, validation_data=valid_generator,
+                        batch_size=bs, callbacks=[earlystop, tensorboard, checkpoint], shuffle=True)
     test_loss,test_accuracy = model.evaluate(test_generator)
     print('test_loss: ', test_loss)
     print('test_accuracy: ', test_accuracy)
@@ -177,3 +180,12 @@ if __name__ == "__main__":
     # serialize the model to disk
     print("saving mask detector model...")
     model.save(args.model, save_format="h5")
+
+    if args.show_history:
+        plt.plot(history.history['loss'])
+        plt.plot(history.history['val_loss'])
+        plt.title('model loss')
+        plt.ylabel('Loss')
+        plt.xlabel('Epochs')
+        plt.legend(['train', 'test'])
+        plt.show()
