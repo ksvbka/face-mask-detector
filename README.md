@@ -59,21 +59,16 @@ Hyperparameter:
     - Input size: 64x64x3
 
 Model result
-| Model         | Test Accuracy|
-| ------------- | -------------|
-| CNN           |  87.67%      |
-| MobileNetV2   |  97.33%      |
-| VGG16         |  91.68%      |
-| **Xception**  | **98.33%**   |
+| Model         | Test Accuracy| Size        | Params    | Memory consumption|
+| ------------- | -------------|-------------|-----------|-------------------|
+| CNN           |  87.67%      | 27.1MB      | 2,203,557 | 72.58 MB
+| VGG16         |  93.08%      | 62.4MB      | **288,357**    | **18.06 MB**
+| MobileNetV2 (fine tune)  |  97.33%      | **20.8MB**  | 1,094,373 | 226.67 MB
+| **Xception**  | **98.33%**   | 96.6MB      | 1,074,789 | 368.18 MB
 
-Model size
-| Model         | Size         |
-| ------------- | -------------|
-| CNN           |  26.5MB      |
-| **MobileNetV2**|  **20.8MB** |
-| VGG16         |  59.2MB      |
-| Xception  | 96.6MB   |
 ## Demo
+
+Using MobileNetV2 model
 
 ![Demo](doc/1.jpg)
 ![Demo](doc/2.jpg)

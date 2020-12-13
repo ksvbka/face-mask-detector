@@ -12,6 +12,7 @@ import cv2
 import warnings
 import argparse
 import numpy as np
+import pandas as pd
 import tensorflow as tf
 import matplotlib.pyplot as plt
 
@@ -93,6 +94,8 @@ def VGG16_model(learning_rate, input_shape):
     model.add(baseModel)
     model.add(AveragePooling2D(pool_size=(2, 2)))
     model.add(Flatten())
+    model.add(Dense(512, activation="relu"))
+    model.add(Dropout(0.5))
     model.add(Dense(50, activation="relu"))
     model.add(Dropout(0.5))
     model.add(Dense(1, activation='sigmoid'))
@@ -122,6 +125,35 @@ def Xception_model(learning_rate, input_shape):
                   optimizer=Adam(learning_rate=learning_rate))
     return model
 
+def keras_model_memory_usage_in_bytes(model, *, batch_size: int):
+    """
+    Return the estimated memory usage of a given Keras model in bytes.
+    Ref: https://stackoverflow.com/a/64359137
+    """
+    default_dtype = tf.keras.backend.floatx()
+    shapes_mem_count = 0
+    internal_model_mem_count = 0
+    for layer in model.layers:
+        if isinstance(layer, tf.keras.Model):
+            internal_model_mem_count += keras_model_memory_usage_in_bytes( layer, batch_size=batch_size)
+        single_layer_mem = tf.as_dtype(layer.dtype or default_dtype).size
+        out_shape = layer.output_shape
+        if isinstance(out_shape, list):
+            out_shape = out_shape[0]
+        for s in out_shape:
+            if s is None:
+                continue
+            single_layer_mem *= s
+        shapes_mem_count += single_layer_mem
+
+    trainable_count = sum([tf.keras.backend.count_params(p) for p in model.trainable_weights])
+    non_trainable_count = sum( [tf.keras.backend.count_params(p) for p in model.non_trainable_weights])
+
+    total_memory = ( batch_size * shapes_mem_count + internal_model_mem_count
+                     + trainable_count + non_trainable_count)
+    return total_memory
+
+
 if __name__ == "__main__":
 
     args = parser.parse_args()
@@ -140,7 +172,9 @@ if __name__ == "__main__":
     train_datagen = ImageDataGenerator(rescale=1./255, rotation_range=5, zoom_range=0.2, \
                                        shear_range=0.2, brightness_range=[0.9, 1.1], \
                                        horizontal_flip=True)                  
-    valid_datagen = ImageDataGenerator(rescale=1./255)
+    valid_datagen = ImageDataGenerator(rescale=1./255, rotation_range=5, zoom_range=0.2, \
+                                       shear_range=0.2, brightness_range=[0.9, 1.1], \
+                                       horizontal_flip=True)
     test_datagen  = ImageDataGenerator(rescale=1./255)
 
     train_generator = train_datagen.flow_from_directory(train_dir, target_size=size, shuffle=True,
@@ -165,7 +199,7 @@ if __name__ == "__main__":
     model = model_builder(lr, shape)
     model.summary()
 
-    earlystop = EarlyStopping(monitor='val_loss', patience=3, mode='auto')
+    earlystop = EarlyStopping(monitor='val_loss', patience=5, mode='auto')
     tensorboard = TensorBoard(log_dir=os.path.join("logs", model_name))
     checkpoint = ModelCheckpoint(os.path.join("results", f"{model_name}" + f"-size-{size[0]}" + \
                                              f"-bs-{bs}" + f"-lr-{lr}.h5"),    \
@@ -173,19 +207,28 @@ if __name__ == "__main__":
     # Train model
     history = model.fit(train_generator, epochs=epochs, validation_data=valid_generator,
                         batch_size=bs, callbacks=[earlystop, tensorboard, checkpoint], shuffle=True)
-    test_loss,test_accuracy = model.evaluate(test_generator)
+    test_loss, test_accuracy = model.evaluate(test_generator)   
+    metrics = pd.DataFrame(history.history)
+    print(metrics.head(10))
+
     print('test_loss: ', test_loss)
     print('test_accuracy: ', test_accuracy)
-
+    print('Memory consumption: %s bytes' % keras_model_memory_usage_in_bytes(model, batch_size=bs))
+    
     # serialize the model to disk
     print("saving mask detector model...")
     model.save(args.model, save_format="h5")
 
     if args.show_history:
-        plt.plot(history.history['loss'])
-        plt.plot(history.history['val_loss'])
-        plt.title('model loss')
-        plt.ylabel('Loss')
-        plt.xlabel('Epochs')
-        plt.legend(['train', 'test'])
+        plt.subplot(211)
+        plt.title('Loss')
+        plt.plot(history.history['loss'], label='train')
+        plt.plot(history.history['val_loss'], label='test')
+        plt.legend()
+
+        plt.subplot(212)
+        plt.title('Accuracy')
+        plt.plot(history.history['accuracy'], label='train')
+        plt.plot(history.history['val_accuracy'], label='test')
+        plt.legend()
         plt.show()

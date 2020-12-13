@@ -6,3 +6,4 @@ keras==2.3.1
 tqdm
 Google-Images-Search
 opencv-python==4.2.0.*
+pandas
