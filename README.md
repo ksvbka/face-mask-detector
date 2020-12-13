@@ -66,6 +66,8 @@ Model result
 | MobileNetV2 (fine tune)  |  97.33%      | **20.8MB**  | 1,094,373 | 226.67 MB
 | **Xception**  | **98.33%**   | 96.6MB      | 1,074,789 | 368.18 MB
 
+Download pre-trained model: [link](https://drive.google.com/u/0/uc?id=1fvoIX1cz3O8yF3VNfneoM0AK7bR5ok7T&export=download)
+
 ## Demo
 
 Using MobileNetV2 model
