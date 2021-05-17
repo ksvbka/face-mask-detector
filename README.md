@@ -33,7 +33,7 @@ Download raw dataset and execute script build_dataset.py to preprare dataset for
 cd data
 bash download_data.sh
 cd -
-python3 build_dataset.py --data-dir data/64x64_dataset --output-dir data/dataset_raw/
+python3 build_dataset.py --data-dir data/dataset_raw/ --output-dir data/64x64_dataset
 ```
 ## Training
 
